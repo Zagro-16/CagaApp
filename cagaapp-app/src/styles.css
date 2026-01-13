@@ -440,3 +440,137 @@ code{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liber
 @media (prefers-reduced-motion: reduce){
   *{ transition:none !important; scroll-behavior:auto !important; }
 }
+/* =========================
+   Bottom Sheet — Super App
+   ========================= */
+
+.sheetOverlay{
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(0,0,0,0.0);
+  backdrop-filter: blur(0px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease, backdrop-filter .18s ease, background .18s ease;
+}
+.sheetOverlay.isOpen{
+  opacity: 1;
+  pointer-events: auto;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+}
+
+.sheet{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 130;
+
+  width: min(980px, 100%);
+  margin: 0 auto;
+
+  background: linear-gradient(180deg, rgba(14,18,32,0.92), rgba(8,10,18,0.92));
+  border: 1px solid rgba(255,255,255,0.14);
+  border-bottom: 0;
+
+  border-top-left-radius: 26px;
+  border-top-right-radius: 26px;
+
+  box-shadow: 0 -22px 60px rgba(0,0,0,0.55);
+  transform: translateY(110%);
+  opacity: 0.98;
+
+  transition: transform .20s ease;
+  overflow: hidden;
+}
+
+.sheet.isOpen{
+  transform: translateY(0%);
+}
+
+.sheetHandleWrap{
+  display:flex;
+  justify-content:center;
+  padding: 10px 0 6px;
+}
+.sheetHandle{
+  width: 54px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.22);
+}
+
+.sheetHeader{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 12px 16px 10px;
+}
+
+.sheetTitleWrap{ min-width:0; }
+.sheetTitle{
+  font-size: 18px;
+  font-weight: 1000;
+  letter-spacing: .2px;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+
+.sheetSub{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap: 10px;
+}
+
+.sheetAddr{
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(244,247,255,0.78);
+  line-height: 1.35;
+}
+
+.sheetClose{
+  min-width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  color: rgba(244,247,255,0.92);
+  cursor: pointer;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.sheetClose:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.22);
+}
+
+.sheetActions{
+  display:flex;
+  gap: 10px;
+  padding: 0 16px 12px;
+}
+.sheetActionBtn{
+  flex: 1;
+}
+
+/* Contenuto scrollabile dentro pannello */
+.sheetBody{
+  padding: 12px 16px calc(18px + env(safe-area-inset-bottom));
+  max-height: min(72vh, 620px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  border-top: 1px solid rgba(255,255,255,0.10);
+}
+
+.sheetSectionTitle{
+  font-size: 13px;
+  font-weight: 1000;
+  letter-spacing: .2px;
+  margin: 6px 0 10px;
+  color: rgba(244,247,255,0.92);
+}

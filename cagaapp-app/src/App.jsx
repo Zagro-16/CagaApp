@@ -79,6 +79,12 @@ function registerServiceWorker(onToast) {
   });
 }
 
+function vibrate(pattern = 18) {
+  try {
+    if (navigator.vibrate) navigator.vibrate(pattern);
+  } catch {}
+}
+
 function DistancePill({ meters }) {
   const label = formatDistance(meters);
   if (!label) return null;
@@ -127,9 +133,65 @@ export default function App() {
     ensureObject(readJSON(LS_KEYS.reviews, {}))
   );
 
+  // ===== Bottom Sheet state =====
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  // badge "Salvata ✅"
+  const [savedBadge, setSavedBadge] = useState(false);
+  const savedBadgeTimer = useRef(null);
+
+  // ref per scroll in alto nel sheet
+  const sheetBodyRef = useRef(null);
+
+  function scrollSheetTop() {
+    // scrolla la body del sheet (se c’è), altrimenti la finestra del sheet
+    try {
+      if (sheetBodyRef.current) {
+        sheetBodyRef.current.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    } catch {}
+  }
+
+  function openSheet(item) {
+    setSelected(item || null);
+    setSheetOpen(!!item);
+    setSavedBadge(false);
+    vibrate(12);
+
+    // appena renderizza, scroll in alto
+    setTimeout(() => scrollSheetTop(), 0);
+  }
+
+  function closeSheet() {
+    setSheetOpen(false);
+    setSavedBadge(false);
+    if (savedBadgeTimer.current) clearTimeout(savedBadgeTimer.current);
+    setTimeout(() => setSelected(null), 180);
+  }
+
+  // blocca scroll body quando sheet aperto
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev || "";
+    };
+  }, [sheetOpen]);
+
+  // chiusura ESC
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const onEsc = (e) => {
+      if (e.key === "Escape") closeSheet();
+    };
+    window.addEventListener("keydown", onEsc);
+    return () => window.removeEventListener("keydown", onEsc);
+  }, [sheetOpen]);
+
   const effectiveRadius = emergency ? Math.min(radius, 300) : radius;
 
-  // ✅ Persist robusto (nessun return)
+  // Persist robusto
   useEffect(() => {
     writeJSON(LS_KEYS.emergency, !!emergency);
   }, [emergency]);
@@ -142,7 +204,7 @@ export default function App() {
     writeJSON(LS_KEYS.reviews, reviewsByPlace);
   }, [reviewsByPlace]);
 
-  // ✅ SW registration once (nessun return)
+  // SW registration once
   const swOnce = useRef(false);
   useEffect(() => {
     if (swOnce.current) return;
@@ -150,7 +212,7 @@ export default function App() {
     registerServiceWorker((t) => setToast(t));
   }, []);
 
-  // ✅ Load public places (cleanup SEMPRE funzione)
+  // Load public places
   useEffect(() => {
     let alive = true;
 
@@ -216,7 +278,7 @@ export default function App() {
     }
 
     setLoading(true);
-    setSelected(null);
+    closeSheet();
 
     try {
       const results = await searchToilets({
@@ -311,10 +373,11 @@ export default function App() {
     return all;
   }, [pos, osmResults, publicPlaces]);
 
+  // se selected sparisce (ricerca nuova / refresh), chiudi sheet
   useEffect(() => {
     if (!selected?.id) return;
     const stillThere = mergedResults.some((x) => x?.id === selected.id);
-    if (!stillThere) setSelected(null);
+    if (!stillThere) closeSheet();
   }, [mergedResults, selected?.id]);
 
   const selectedId = selected?.id || null;
@@ -353,12 +416,7 @@ export default function App() {
         </div>
 
         <div style={{ marginTop: 14 }}>
-          <RadiusControl
-            value={radius}
-            effectiveValue={effectiveRadius}
-            emergency={emergency}
-            onChange={(v) => setRadius(v)}
-          />
+          <RadiusControl value={radius} effectiveValue={effectiveRadius} emergency={emergency} onChange={(v) => setRadius(v)} />
         </div>
 
         {pos ? (
@@ -404,7 +462,7 @@ export default function App() {
             <button
               className="btn"
               onClick={() => {
-                setSelected(null);
+                closeSheet();
                 setOsmResults([]);
                 setToast({ type: "info", title: "Pulito", message: "Risultati locali rimossi." });
               }}
@@ -419,70 +477,97 @@ export default function App() {
             items={mergedResults}
             selectedId={selectedId}
             emergency={emergency}
-            onSelect={(item) => setSelected(item || null)}
+            onSelect={(item) => openSheet(item)}
             getAvgStars={(placeId) => getAvgStars(placeId)}
             getReviewCount={(placeId) => getReviewsFor(placeId).length}
           />
         </div>
       </div>
 
+      {/* ===== Bottom Sheet dettagli ===== */}
       {selected ? (
-        <div className="card" style={{ padding: 16, marginTop: 12 }}>
-          <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap" }}>
-            <div style={{ minWidth: 220 }}>
-              <div className="h2" style={{ marginBottom: 6 }}>
-                {selected.name || "Bagno"}
-              </div>
+        <>
+          <div className={`sheetOverlay ${sheetOpen ? "isOpen" : ""}`} onClick={closeSheet} />
 
-              <div className="row" style={{ flexWrap: "wrap", marginTop: 6 }}>
-                <DistancePill meters={selected.distanceMeters} />
-              </div>
-
-              <div className="small" style={{ marginTop: 10 }}>
-                Valutazione: <b>{selectedAvg ? selectedAvg.toFixed(1) : "—"}</b> ⭐{" "}
-                <span style={{ opacity: 0.85 }}>({selectedCount} recensioni)</span>
-              </div>
+          <div className={`sheet ${sheetOpen ? "isOpen" : ""}`} role="dialog" aria-modal="true">
+            <div className="sheetHandleWrap">
+              <div className="sheetHandle" />
             </div>
 
-            <div className="row" style={{ flexWrap: "wrap", alignItems: "center" }}>
-              <button className="btn btn--primary" onClick={() => openGoogleMapsDirections(selected.lat, selected.lon, "walking")}>
+            <div className="sheetHeader">
+              <div className="sheetTitleWrap">
+                <div className="sheetTitle">{selected.name || "Bagno pubblico"}</div>
+
+                <div className="sheetSub">
+                  <DistancePill meters={selected.distanceMeters} />
+                  <span className="pill">⭐ {selectedAvg ? selectedAvg.toFixed(1) : "—"}</span>
+                  <span className="pill">{selectedCount} recensioni</span>
+
+                  {/* ✅ badge salvata */}
+                  {savedBadge ? <span className="badge badge--ok">Salvata ✅</span> : null}
+                </div>
+
+                {selected?.meta?.address ? <div className="sheetAddr">{selected.meta.address}</div> : null}
+                {selected?.meta?.notes ? <div className="sheetAddr">Note: {selected.meta.notes}</div> : null}
+              </div>
+
+              <button className="sheetClose" onClick={closeSheet} aria-label="Chiudi">
+                ✕
+              </button>
+            </div>
+
+            <div className="sheetActions">
+              <button className="btn btn--primary sheetActionBtn" onClick={() => openGoogleMapsDirections(selected.lat, selected.lon, "walking")}>
                 Naviga a piedi
               </button>
-              <button className="btn btn--blue" onClick={() => openGoogleMapsDirections(selected.lat, selected.lon, "driving")}>
+
+              <button className="btn btn--blue sheetActionBtn" onClick={() => openGoogleMapsDirections(selected.lat, selected.lon, "driving")}>
                 Naviga auto
               </button>
-              <button className="btn" onClick={() => setSelected(null)}>
-                Chiudi
-              </button>
+            </div>
+
+            <div className="sheetBody" ref={sheetBodyRef}>
+              <div className="sheetSectionTitle">Recensioni (locali)</div>
+
+              <Reviews
+                placeId={selectedId}
+                placeName={selected?.name || "Luogo"}
+                reviews={getReviewsFor(selectedId)}
+                onAdd={(review) => {
+                  if (!selectedId) return;
+
+                  // salva local
+                  setReviewsByPlace((prev) => {
+                    const obj = ensureObject(prev);
+                    const arr = ensureArray(obj[selectedId]);
+                    return { ...obj, [selectedId]: [review, ...arr] };
+                  });
+
+                  // ✅ badge + vibrazione + scroll top
+                  setSavedBadge(true);
+                  vibrate([10, 30, 10]);
+                  scrollSheetTop();
+
+                  if (savedBadgeTimer.current) clearTimeout(savedBadgeTimer.current);
+                  savedBadgeTimer.current = setTimeout(() => setSavedBadge(false), 1800);
+
+                  setToast({ type: "success", title: "Recensione salvata", message: "Grazie!" });
+                }}
+                onDelete={(reviewId) => {
+                  if (!selectedId) return;
+                  setReviewsByPlace((prev) => {
+                    const obj = ensureObject(prev);
+                    const arr = ensureArray(obj[selectedId]).filter((r) => r?.id !== reviewId);
+                    return { ...obj, [selectedId]: arr };
+                  });
+                  setToast({ type: "info", title: "Recensione eliminata", message: "Ok." });
+                }}
+              />
+
+              <div style={{ height: 18 }} />
             </div>
           </div>
-
-          <div style={{ marginTop: 14 }}>
-            <Reviews
-              placeId={selectedId}
-              placeName={selected?.name || "Luogo"}
-              reviews={getReviewsFor(selectedId)}
-              onAdd={(review) => {
-                if (!selectedId) return;
-                setReviewsByPlace((prev) => {
-                  const obj = ensureObject(prev);
-                  const arr = ensureArray(obj[selectedId]);
-                  return { ...obj, [selectedId]: [review, ...arr] };
-                });
-                setToast({ type: "success", title: "Recensione salvata", message: "Grazie!" });
-              }}
-              onDelete={(reviewId) => {
-                if (!selectedId) return;
-                setReviewsByPlace((prev) => {
-                  const obj = ensureObject(prev);
-                  const arr = ensureArray(obj[selectedId]).filter((r) => r?.id !== reviewId);
-                  return { ...obj, [selectedId]: arr };
-                });
-                setToast({ type: "info", title: "Recensione eliminata", message: "Ok." });
-              }}
-            />
-          </div>
-        </div>
+        </>
       ) : null}
 
       <div className="card" style={{ padding: 16, marginTop: 12 }}>
@@ -494,16 +579,12 @@ export default function App() {
         <div style={{ marginTop: 12 }}>
           <AddPlace
             currentPos={pos}
-            onNeedGPS={() =>
-              setToast({ type: "error", title: "Serve il GPS", message: "Attiva la posizione per aggiungere un luogo." })
-            }
+            onNeedGPS={() => setToast({ type: "error", title: "Serve il GPS", message: "Attiva la posizione per aggiungere un luogo." })}
             onSaved={async () => {
               setToast({ type: "success", title: "Inviato", message: "Luogo salvato online. Aggiorno elenco…" });
               await refreshPublicPlaces();
             }}
-            onError={(msg) =>
-              setToast({ type: "error", title: "Errore salvataggio", message: msg || "Operazione non riuscita." })
-            }
+            onError={(msg) => setToast({ type: "error", title: "Errore salvataggio", message: msg || "Operazione non riuscita." })}
           />
         </div>
       </div>

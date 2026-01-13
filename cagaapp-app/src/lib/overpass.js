@@ -1,6 +1,7 @@
 // src/lib/overpass.js
-// Overpass: toilets + "likely" (bar/cafe/etc).
-// PRO: query compatta, retry su 504/429, fallback "toilets only", endpoint multipli.
+// Overpass: SOLO bagni pubblici (amenity=toilets).
+// PRO: query compatta, retry su 504/429, endpoint multipli, parsing robusto.
+// Nota: niente "likely" (bar/cafe/etc). Solo risultati confermati.
 
 const ENDPOINTS = [
   "https://overpass-api.de/api/interpreter",
@@ -46,14 +47,14 @@ function parseToilet(el) {
   if (!center) return null;
 
   const tags = normalizeTags(el.tags);
-  const name = safeStr(tags.name) || "Bagno";
+  const name = safeStr(tags.name) || "Bagno pubblico";
   const id = `osm:${el.type}/${el.id}`;
 
   return {
     source: "osm",
     id,
     kind: "toilet",
-    category: "Bagno confermato",
+    category: "Bagno pubblico",
     name,
     lat: center.lat,
     lon: center.lon,
@@ -69,73 +70,10 @@ function parseToilet(el) {
   };
 }
 
-function parseLikely(el, label) {
-  const center = pickCenter(el);
-  if (!center) return null;
-
-  const tags = normalizeTags(el.tags);
-  const name = safeStr(tags.name) || label;
-  const id = `osm:${el.type}/${el.id}:likely`;
-
-  return {
-    source: "osm",
-    id,
-    kind: "likely",
-    category: label,
-    name,
-    lat: center.lat,
-    lon: center.lon,
-    meta: {
-      opening: safeStr(tags.opening_hours),
-      fee: "",
-      access: "",
-      unisex: "",
-      wheelchair: safeStr(tags.wheelchair),
-      notes: "Bagno probabile (luogo correlato).",
-      address: safeStr(tags["addr:full"]) || safeStr(tags["addr:street"]) || ""
-    }
-  };
-}
-
-function labelFromTags(tags) {
-  if (tags?.amenity === "bar") return "Bar";
-  if (tags?.amenity === "pub") return "Pub";
-  if (tags?.amenity === "cafe") return "Caffè";
-  if (tags?.amenity === "restaurant") return "Ristorante";
-  if (tags?.amenity === "fast_food") return "Fast food";
-  if (tags?.railway === "station") return "Stazione";
-  if (tags?.amenity === "bus_station") return "Bus station";
-  if (tags?.aeroway === "terminal") return "Aeroporto";
-  if (tags?.shop === "mall") return "Centro commerciale";
-  if (tags?.shop === "supermarket") return "Supermercato";
-  return "";
-}
-
-function buildQuery({ lat, lon, radiusMeters, includeLikely, timeoutSec }) {
+function buildToiletsQuery({ lat, lon, radiusMeters, timeoutSec }) {
   const R = clamp(radiusMeters, MIN, MAX);
 
-  // ✅ compatta: nwr + regex
-  const likely = includeLikely
-    ? `
-      nwr(around:${R},${lat},${lon})["amenity"~"^(bar|pub|cafe|restaurant|fast_food|bus_station)$"];
-      nwr(around:${R},${lat},${lon})["railway"="station"];
-      nwr(around:${R},${lat},${lon})["aeroway"="terminal"];
-      nwr(around:${R},${lat},${lon})["shop"~"^(mall|supermarket)$"];
-    `
-    : "";
-
-  return `
-    [out:json][timeout:${timeoutSec}];
-    (
-      nwr(around:${R},${lat},${lon})["amenity"="toilets"];
-      ${likely}
-    );
-    out center tags qt;
-  `;
-}
-
-function buildToiletsOnlyQuery({ lat, lon, radiusMeters, timeoutSec }) {
-  const R = clamp(radiusMeters, MIN, MAX);
+  // ✅ compatta: nwr (node/way/relation) -> toilets only
   return `
     [out:json][timeout:${timeoutSec}];
     (
@@ -147,7 +85,6 @@ function buildToiletsOnlyQuery({ lat, lon, radiusMeters, timeoutSec }) {
 
 async function postOverpass(endpoint, query) {
   const controller = new AbortController();
-  // extra-safety client side (non sostituisce il timeout overpass)
   const hardTimeout = setTimeout(() => controller.abort(), 55000);
 
   try {
@@ -175,7 +112,7 @@ async function postOverpass(endpoint, query) {
   }
 }
 
-function parseElements(elements, includeLikely) {
+function parseElements(elements) {
   const out = [];
   const arr = Array.isArray(elements) ? elements : [];
 
@@ -185,15 +122,6 @@ function parseElements(elements, includeLikely) {
     if (tags?.amenity === "toilets") {
       const it = parseToilet(el);
       if (it) out.push(it);
-      continue;
-    }
-
-    if (includeLikely) {
-      const label = labelFromTags(tags);
-      if (label) {
-        const it = parseLikely(el, label);
-        if (it) out.push(it);
-      }
     }
   }
 
@@ -207,15 +135,14 @@ function parseElements(elements, includeLikely) {
 
 /**
  * Strategia:
- * - 1° giro: query completa (toilets + likely) con timeout 35
- * - se 504/429: retry con timeout 45 e piccola attesa
- * - se fallisce ancora: fallback "toilets only" (sempre con retry)
+ * - 2 tentativi con timeout progressivo (35 -> 45) e piccola attesa
+ * - prova endpoint multipli
+ * - se errore non è 504/429, evita attese inutili
  */
 export async function searchToilets({
   lat,
   lon,
   radiusMeters,
-  includeLikely = true,
   maxResults = 300
 }) {
   const la = toNumber(lat);
@@ -225,75 +152,41 @@ export async function searchToilets({
   const R = clamp(radiusMeters, MIN, MAX);
   const limit = Math.max(50, Math.min(800, Number(maxResults) || 300));
 
-  // 2 tentativi per query completa, poi fallback
   const attempts = [
-    { kind: "full", timeoutSec: 35, waitMs: 0 },
-    { kind: "full", timeoutSec: 45, waitMs: 650 }
-  ];
-
-  const fallbackAttempts = [
-    { kind: "toiletsOnly", timeoutSec: 35, waitMs: 350 },
-    { kind: "toiletsOnly", timeoutSec: 45, waitMs: 650 }
+    { timeoutSec: 35, waitMs: 0 },
+    { timeoutSec: 45, waitMs: 650 }
   ];
 
   let lastErr = null;
 
-  // helper che prova su tutti gli endpoint
-  async function tryAllEndpoints(query, incLikely) {
+  async function tryAllEndpoints(query) {
     for (let i = 0; i < ENDPOINTS.length; i++) {
       try {
         const json = await postOverpass(ENDPOINTS[i], query);
-        const parsed = parseElements(json?.elements, incLikely);
+        const parsed = parseElements(json?.elements);
         return parsed.slice(0, limit);
       } catch (e) {
         lastErr = e;
-
-        const s = Number(e?.status || 0);
-        // se endpoint è carico, prova subito il prossimo
-        // (wait gestita fuori)
-        if (s === 400) {
-          // 400 = query respinta, inutile insistere troppo su quell'endpoint
-        }
+        // prova endpoint successivo
       }
     }
     return null;
   }
 
-  // --- full query ---
   for (const a of attempts) {
     if (a.waitMs) await sleep(a.waitMs);
 
-    const query = buildQuery({
-      lat: la,
-      lon: lo,
-      radiusMeters: R,
-      includeLikely,
-      timeoutSec: a.timeoutSec
-    });
-
-    const data = await tryAllEndpoints(query, includeLikely);
-
-    if (data && data.length) return data;
-
-    // se errore non è 504/429, passa direttamente al fallback (eviti attese inutili)
-    const s = Number(lastErr?.status || 0);
-    if (s && s !== 504 && s !== 429 && s !== 0) break;
-  }
-
-  // --- toilets only fallback ---
-  for (const a of fallbackAttempts) {
-    if (a.waitMs) await sleep(a.waitMs);
-
-    const query = buildToiletsOnlyQuery({
+    const query = buildToiletsQuery({
       lat: la,
       lon: lo,
       radiusMeters: R,
       timeoutSec: a.timeoutSec
     });
 
-    const data = await tryAllEndpoints(query, false);
+    const data = await tryAllEndpoints(query);
     if (data && data.length) return data;
 
+    // se non è 504/429, non perdere tempo in retry
     const s = Number(lastErr?.status || 0);
     if (s && s !== 504 && s !== 429 && s !== 0) break;
   }
