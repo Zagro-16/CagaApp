@@ -1,0 +1,45 @@
+{
+  "name": "CagaApp",
+  "short_name": "CagaApp",
+  "description": "Trova il bagno più vicino in pochi secondi con GPS e OpenStreetMap.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "background_color": "#ff7a18",
+  "theme_color": "#ff7a18",
+  "orientation": "portrait",
+  "lang": "it",
+  "categories": ["utilities", "navigation", "travel"],
+
+  "icons": [
+    {
+      "src": "./assets/cagapp.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/cagapp.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+
+  "shortcuts": [
+    {
+      "name": "Trova bagni vicini",
+      "short_name": "Trova",
+      "url": "./#find",
+      "icons": [{ "src": "./assets/cagapp.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Modalità emergenza",
+      "short_name": "Emergenza",
+      "url": "./#emergency",
+      "icons": [{ "src": "./assets/cagapp.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

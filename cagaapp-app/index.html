@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>CagaApp</title>
+    <meta name="description" content="CagaApp: trova il bagno al volo con geolocalizzazione e OpenStreetMap." />
+    <meta name="theme-color" content="#ff7a18" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+
+    <!-- Icons -->
+    <link rel="icon" href="./assets/cagapp.png" />
+    <link rel="apple-touch-icon" href="./assets/cagapp.png" />
+
+    <!-- iOS PWA support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CagaApp" />
+
+    <!-- Performance hints -->
+    <link rel="preload" as="image" href="./assets/caga.png" />
+    <link rel="preload" as="image" href="./assets/cagapp.png" />
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <!-- IMPORTANT: relativo, compatibile con base /app/ -->
+    <script type="module" src="./src/main.jsx"></script>
+  </body>
+</html>

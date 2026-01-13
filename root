@@ -1,0 +1,58 @@
+cagapp/
+├─ netlify.toml
+├─ package.json
+├─ package-lock.json
+├─ netlify/
+│  └─ functions/
+│     ├─ places-get.mjs
+│     ├─ places-add.mjs
+│     ├─ places-delete.mjs
+│     └─ _shared.mjs
+├─ scripts/
+│  └─build.mjs
+├─ cagaapp-site/
+│  ├─ index.html
+│  ├─ privacy.html
+│  ├─ assets/
+│  │  ├─ caga.png        (LOGO - grande e visibile)
+│  │  └─ cagapp.png      (ICONA - quadrata)
+│  ├─ css/
+│  │  └─ styles.css
+│  └─ js/
+│     └─ main.js
+└─ cagaapp-app/
+   │─ node_modules
+   ├─ index.html
+   ├─ package.json
+   ├─ package-lock.json
+   ├─ vite.config.js
+   ├─ public/
+   │  ├─ manifest.webmanifest
+   │  ├─ sw.js
+   ├─ ├─ offline.html
+   │  └─ assets/
+   │     ├─ caga.png      (LOGO)
+   │     └─ cagapp.png    (ICONA)
+   └─ src/
+      ├─ main.jsx
+      ├─ App.jsx
+      ├─ styles.css
+      ├─ lib/
+      │  ├─ safeStorage.js
+      │  ├─ geo.js
+      ├─ ├─ ranking.js
+      │  ├─ overpass.js
+      │  ├─ distance.js
+      │  └─ api.js
+      └─ components/
+         ├─ Header.jsx
+         ├─ Toast.jsx
+         ├─ GeoGate.jsx
+         ├─ RadiusControl.jsx
+         ├─ ResultsList.jsx
+         ├─ EmergencyToggle.jsx
+         ├─ AddPlace.jsx
+         ├─ Reviews.jsx
+         └─ PrivacyCard.jsx
+         ├─ InstallPrompt.jsx
+         ├─ UpdateBadge.jsx

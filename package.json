@@ -1,0 +1,13 @@
+{
+  "name": "cagapp-monorepo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "dev:site": "npx serve cagaapp-site -l 3000",
+    "dev:app": "npm --prefix cagaapp-app run dev"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

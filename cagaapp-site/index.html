@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CagaApp — Trova il bagno al volo</title>
+  <meta name="description" content="CagaApp trova i bagni pubblici più vicini con la geolocalizzazione. Zero account, zero complicazioni. Emergency-friendly." />
+  <link rel="icon" href="./assets/cagapp.png" />
+  <link rel="apple-touch-icon" href="./assets/cagapp.png" />
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <a class="brand" href="./">
+        <img src="./assets/caga.png" alt="CagaApp logo" class="brand__logo" />
+      </a>
+
+      <nav class="nav">
+        <a href="#storia">Storia</a>
+        <a href="#come-funziona">Come funziona</a>
+        <a href="#funzioni">Funzioni</a>
+        <a href="./privacy.html">Privacy</a>
+      </nav>
+
+      <div class="topbar__cta">
+        <a class="btn btn--ghost" href="/app/">Apri App</a>
+        <a class="btn btn--primary" href="/app/">Installa</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero__grid">
+        <div class="hero__copy">
+          <h1>Quando sei fuori casa, serve una soluzione immediata.</h1>
+          <p class="lead">
+            “Ogni volta che esco di casa mi viene. A casa no. In viaggio sì. In una città nuova sì.”
+            <br />
+            <strong>CagaApp</strong> apre, chiede la geolocalizzazione e ti mostra <strong>subito</strong> i bagni più vicini.
+          </p>
+
+          <div class="hero__actions">
+            <a class="btn btn--primary btn--xl" href="/app/">Apri / Installa App</a>
+            <a class="btn btn--ghost btn--xl" href="#come-funziona">Scopri come funziona</a>
+          </div>
+
+          <div class="hero__badges">
+            <span class="badge">Mobile-first</span>
+            <span class="badge">Zero account</span>
+            <span class="badge">Emergency-friendly</span>
+            <span class="badge">OpenStreetMap</span>
+          </div>
+        </div>
+
+        <div class="hero__visual" aria-hidden="true">
+          <div class="card card--glow">
+            <img src="./assets/caga.png" alt="" class="hero__logo" />
+            <p class="muted">
+              In situazioni di stress servono pulsanti grandi, testo chiaro e zero attriti.
+            </p>
+            <div class="mini-steps">
+              <div class="mini-step"><span class="dot"></span><span>Apri</span></div>
+              <div class="mini-step"><span class="dot"></span><span>Consenti GPS</span></div>
+              <div class="mini-step"><span class="dot"></span><span>Vai</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="storia" class="section">
+      <div class="wrap section__grid">
+        <div>
+          <h2>Perché nasce CagaApp</h2>
+          <p>
+            Non è una “app tanto per”. È una risposta a un problema reale: quando sei fuori casa non hai tempo
+            di cercare, filtrare, leggere recensioni infinite o creare account.
+          </p>
+          <p>
+            CagaApp è pensata per essere <strong>veloce</strong>, <strong>leggibile</strong> e <strong>diretta</strong>.
+            Apri → GPS → elenco ordinato per distanza → navigazione.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Obiettivo</h3>
+          <ul class="list">
+            <li><strong>Subito</strong> i bagni più vicini</li>
+            <li>Nessun login, nessuna registrazione</li>
+            <li>Interfaccia “emergency-friendly”</li>
+            <li>Funziona ovunque grazie a OpenStreetMap</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="come-funziona" class="section section--alt">
+      <div class="wrap">
+        <h2>Come funziona</h2>
+
+        <div class="steps">
+          <div class="step card">
+            <h3>1) Geolocalizzazione</h3>
+            <p>Chiediamo il permesso GPS in modo chiaro, con messaggi utili se viene negato o se manca HTTPS.</p>
+          </div>
+
+          <div class="step card">
+            <h3>2) Ricerca bagni vicini</h3>
+            <p>Interroghiamo OpenStreetMap (Overpass) e ordiniamo i risultati per distanza reale.</p>
+          </div>
+
+          <div class="step card">
+            <h3>3) Navigazione immediata</h3>
+            <p>Un tap per aprire Google Maps (o alternative) e arrivare in fretta.</p>
+          </div>
+        </div>
+
+        <div class="cta-strip">
+          <div>
+            <h3>Worldwide</h3>
+            <p class="muted">OpenStreetMap è globale. L’app funziona ovunque, anche in Italia senza configurazioni.</p>
+          </div>
+          <a class="btn btn--primary btn--xl" href="/app/">Apri / Installa</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="funzioni" class="section">
+      <div class="wrap">
+        <h2>Funzionalità principali</h2>
+
+        <div class="features">
+          <div class="feature card">
+            <h3>Raggio regolabile</h3>
+            <p>Da 50 metri a 5 km. Perfetto in città o in autostrada.</p>
+          </div>
+
+          <div class="feature card">
+            <h3>Modalità Emergenza 🚨</h3>
+            <p>UI semplificata, risultati super vicini, pulsanti grandi.</p>
+          </div>
+
+          <div class="feature card">
+            <h3>Aggiungi un luogo</h3>
+            <p>Salva un posto utile con note e foto. E puoi vederlo anche online.</p>
+          </div>
+
+          <div class="feature card">
+            <h3>Recensioni locali</h3>
+            <p>Valutazioni 1–5 stelle e testo: tutto resta sul tuo dispositivo.</p>
+          </div>
+
+          <div class="feature card">
+            <h3>Privacy chiara</h3>
+            <p>Nessun account. Nessun tracking. Solo ciò che serve per trovare un bagno.</p>
+          </div>
+
+          <div class="feature card">
+            <h3>PWA installabile</h3>
+            <p>Si installa su Android e iOS e funziona anche con offline parziale.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--final">
+      <div class="wrap final-cta">
+        <img src="./assets/caga.png" alt="CagaApp" class="final-cta__logo" />
+        <div>
+          <h2>Pronto. Apri e vai.</h2>
+          <p class="muted">Quando serve, non vuoi perdere tempo.</p>
+          <div class="final-cta__actions">
+            <a class="btn btn--primary btn--xl" href="/app/">Apri / Installa App</a>
+            <a class="btn btn--ghost btn--xl" href="./privacy.html">Leggi la Privacy</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__grid">
+      <div>
+        <img src="./assets/caga.png" alt="CagaApp" class="footer__logo" />
+        <p class="muted">CagaApp — Trova il bagno al volo.</p>
+      </div>
+
+      <div class="footer__links">
+        <a href="#storia">Storia</a>
+        <a href="#come-funziona">Come funziona</a>
+        <a href="#funzioni">Funzioni</a>
+        <a href="./privacy.html">Privacy</a>
+        <a href="/app/">Apri App</a>
+      </div>
+
+      <div class="footer__note">
+        <p class="muted">
+          Dati luoghi pubblici: OpenStreetMap contributors. Questa landing non usa cookie di tracciamento.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./js/main.js" defer></script>
+</body>
+</html>

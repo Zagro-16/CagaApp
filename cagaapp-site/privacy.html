@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy — CagaApp</title>
+  <meta name="description" content="Privacy di CagaApp: nessun account, nessun tracking, geolocalizzazione solo per trovare bagni vicini." />
+  <link rel="icon" href="./assets/cagapp.png" />
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <a class="brand" href="./">
+        <img src="./assets/caga.png" alt="CagaApp logo" class="brand__logo" />
+      </a>
+      <div class="topbar__cta">
+        <a class="btn btn--ghost" href="./">Home</a>
+        <a class="btn btn--primary" href="/app/">Apri App</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="section">
+    <div class="wrap prose card">
+      <h1>Privacy</h1>
+      <p>
+        CagaApp è progettata con un principio semplice: <strong>fare una cosa sola, bene</strong>, senza raccogliere dati inutili.
+      </p>
+
+      <h2>Cosa fa l’app</h2>
+      <ul class="list">
+        <li>Chiede la geolocalizzazione <strong>solo</strong> per mostrarti i bagni vicini.</li>
+        <li>Interroga OpenStreetMap/Overpass per ottenere i punti “toilets”.</li>
+        <li>Salva sul dispositivo le recensioni e alcune preferenze (raggio, modalità emergenza).</li>
+      </ul>
+
+      <h2>Cosa NON fa</h2>
+      <ul class="list">
+        <li>Nessun account, nessun login.</li>
+        <li>Nessun tracciamento pubblicitario.</li>
+        <li>Nessuna vendita di dati.</li>
+      </ul>
+
+      <h2>Dati salvati</h2>
+      <p>
+        Recensioni e impostazioni sono salvate in locale (localStorage) in modo robusto.
+        I luoghi “aggiunti” possono essere pubblicati online tramite infrastruttura Netlify del sito,
+        così da essere visibili anche ad altri utenti dell’app.
+      </p>
+
+      <h2>Controllo dell’utente</h2>
+      <p>
+        Puoi negare il GPS: l’app te lo spiegherà e non potrà calcolare le distanze.
+        Puoi anche cancellare recensioni e i luoghi aggiunti.
+      </p>
+
+      <div class="hr"></div>
+      <a class="btn btn--primary" href="/app/">Apri / Installa App</a>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__grid">
+      <div>
+        <img src="./assets/caga.png" alt="CagaApp" class="footer__logo" />
+        <p class="muted">CagaApp — Trova il bagno al volo.</p>
+      </div>
+      <div class="footer__links">
+        <a href="./">Home</a>
+        <a href="/app/">Apri App</a>
+      </div>
+      <div class="footer__note">
+        <p class="muted">Nessun cookie di tracciamento. Solo ciò che serve.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
